@@ -1,0 +1,14 @@
+# clangd config. PlatformIO's compile_commands.json carries Xtensa GCC flags
+# that system clangd doesn't understand; strip them so the language server can
+# parse ESP32 sources without spurious "unknown argument" errors. Editor-only —
+# has zero effect on the actual PlatformIO build.
+CompileFlags:
+  Remove:
+    - -mlongcalls
+    - -mtext-section-literals
+    - -fstrict-volatile-bitfields
+    - -fno-tree-switch-conversion
+    - -free
+    - -fipa-pta
+  Add:
+    - -std=gnu++17
