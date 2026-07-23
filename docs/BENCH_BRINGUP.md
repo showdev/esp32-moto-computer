@@ -40,6 +40,15 @@ Pins (plain WROOM-32, from `include/config.h`):
   holds it high, which matches — so the pull-up is required, not optional.
 - Exactly 85.0 °C reads as the power-on-default fault; irrelevant at bench temps.
 
+**Result (2026-07-24): PASSED.** Probe read a stable 23.4 °C (no longer -127 →
+1-Wire + pull-up + boot all good). Output path isolated first via the `ledtest`
+env (GPIO4 blink → LED, confirmed) before adding the sensor. Live run: held `off`
+through 29.9, tripped **ON at 30.1 °C**, held ON through the dead-band down to
+29.0, and was `off` + latched below 30 across 28.6→27.9. Exact 28.0 off-crossing
+fell in a between-window gap (probe dipped <28 then rebounded); latch behaviour
+confirmed, crossing itself covered by unit tests. Bench blink helper: `pio run -e
+ledtest -t upload`; return to normal with `pio run -e esp32dev_bench -t upload`.
+
 ---
 
 ## Stage 2 — OLED temperature readout
