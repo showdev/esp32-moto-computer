@@ -17,6 +17,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <SPI.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <Adafruit_ADS1X15.h>
@@ -31,7 +32,11 @@
 static OneWire oneWire(PIN_DS18B20);
 static DallasTemperature ds18b20(&oneWire);
 static Adafruit_ADS1115 ads;
-static Adafruit_SSD1306 display(OLED_W, OLED_H, &Wire, -1);
+// 4-wire software SPI: (w, h, mosi, sclk, dc, rst, cs). Bit-banged on named pins
+// to avoid hardware SPI's default SS grabbing GPIO5 (the 1-Wire sensor pin).
+static Adafruit_SSD1306 display(OLED_W, OLED_H,
+                                PIN_OLED_MOSI, PIN_OLED_CLK,
+                                PIN_OLED_DC, PIN_OLED_RST, PIN_OLED_CS);
 static Preferences prefs;
 
 // ---- pure controllers (thresholds from config.h) ----
@@ -105,14 +110,11 @@ void setup() {
 
     Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL);
     adsOk = ads.begin(0x48, &Wire);
-    // SSD1306::begin() returns true whenever the framebuffer malloc succeeds —
-    // it never checks for an I2C ACK, so it reports "present" with nothing on
-    // the bus. Probe the address explicitly first.
-    Wire.beginTransmission(OLED_ADDR);
-    oledOk = (Wire.endTransmission() == 0);
-    if (oledOk) {
-        oledOk = display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR);
-    }
+    // SPI has no ACK, so unlike the I2C path there is no way to detect whether a
+    // display is actually connected — begin() only tells us the framebuffer
+    // malloc succeeded. oledOk therefore means "driver initialised", not
+    // "hardware present" (see docs/DECISIONS.md D4).
+    oledOk = display.begin(SSD1306_SWITCHCAPVCC);
     Serial.printf("[moto-control] ADS1115:%s  OLED:%s\n",
                   adsOk ? "present" : "ABSENT", oledOk ? "present" : "ABSENT");
 

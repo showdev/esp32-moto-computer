@@ -53,13 +53,20 @@ ledtest -t upload`; return to normal with `pio run -e esp32dev_bench -t upload`.
 
 ## Stage 2 — OLED temperature readout
 
-**Wire:** SSD1306 SDA→GPIO21, SCL→GPIO22, Vcc→3V3, GND→GND.
+The module on hand turned out to be the **SPI** SSD1306 (7-pin: D0/D1/RES/DC/CS),
+not I²C — firmware was adapted to software SPI (see DECISIONS D4).
 
-**Firmware:** none — `renderOled()` already draws temp/fan/volts/hours, and the
-explicit I²C ACK probe now reports the OLED present only when it truly is.
+**Wire (SPI):** D0→GPIO18, D1→GPIO23, RES→GPIO25, DC→GPIO17, CS→GPIO16,
+Vcc→3V3, GND→GND. (ADS1115 keeps I²C on GPIO21/22.)
 
-**Verify:** boot banner flips to `OLED:present`; on-screen temp tracks serial as
-you warm the probe.
+**Firmware:** display constructor + init switched to software SPI; `renderOled()`
+unchanged (draws temp/fan/volts/hours). Note: SPI has no ACK, so `OLED:present`
+now means "driver initialised", not "hardware present" — verify visually.
+
+**Verify:** on-screen text (`Temp/Fan/Batt/Run/Hrs`) matches serial.
+
+**Result (2026-07-24): PASSED.** Boot banner `OLED:present`, five status lines on
+the glass matching serial (`T=23.6 OK, fan off`). Live temp tracks the probe.
 
 ---
 

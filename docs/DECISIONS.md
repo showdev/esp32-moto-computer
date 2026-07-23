@@ -133,3 +133,33 @@ malloc success without checking an I2C ACK, so it always reported "present". Now
 probed with an explicit `Wire.beginTransmission/endTransmission` ACK test first.
 
 
+
+## D4 — OLED on SPI, not I2C (no presence detection)
+
+**Date:** 2026-07-24 · **Status:** Adopted · **Code:** `include/config.h` (PIN_OLED_*), `src/main.cpp` (display ctor + init)
+
+### Context
+
+The SSD1306 module on hand is the 7-pin SPI variant (labeled D0/D1/RES/DC/CS),
+not the 4-pin I2C board the firmware originally assumed. Options were: convert the
+module to I2C (SMD resistor rework), buy an I2C module, or drive it over SPI.
+Chose SPI — use the part in hand, no soldering.
+
+### Decision
+
+- **Software (bit-banged) SPI**, not hardware SPI. ESP32 hardware-SPI `begin()`
+  claims a default SS pin (GPIO5), which is our 1-Wire sensor pin. Software SPI
+  bit-bangs on explicitly named pins with no hidden pin grabs. Display refreshes
+  at 1 Hz, so bit-bang speed is irrelevant.
+- Pins (WROOM-32): D0/CLK=18, D1/MOSI=23, DC=17, CS=16, RES=25. All free,
+  non-strapping, output-capable; clear of GPIO4/5 (fan, sensor) and 21/22 (I2C,
+  still used by the ADS1115).
+
+### Consequence — presence detection lost
+
+SPI has no ACK. The D3 fix (explicit I2C ACK probe) has no SPI equivalent, so
+`oledOk` now means only "framebuffer malloc succeeded", NOT "a display is really
+connected". A disconnected SPI display cannot be distinguished from a present one
+in firmware. Harmless (the OLED is display-only, not failsafe-critical), but the
+boot banner's `OLED:present` is no longer trustworthy as a wiring check — confirm
+the display visually.

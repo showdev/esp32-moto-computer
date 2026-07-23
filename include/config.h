@@ -13,13 +13,28 @@
 #if defined(BOARD_ESP32S3)
 static constexpr int PIN_FAN_MOSFET = 4;  // LR7843 signal (isolated MOSFET module)
 static constexpr int PIN_DS18B20    = 5;  // 1-Wire data (+ 4.7k pullup to 3V3)
-static constexpr int PIN_I2C_SDA    = 8;  // OLED + ADS1115 share this bus
+static constexpr int PIN_I2C_SDA    = 8;  // ADS1115 (OLED is on SPI, see below)
 static constexpr int PIN_I2C_SCL    = 9;
+// SSD1306 OLED via 4-wire software SPI (provisional S3 pins — untested)
+static constexpr int PIN_OLED_CLK   = 12; // D0 (SCLK)
+static constexpr int PIN_OLED_MOSI  = 11; // D1 (MOSI)
+static constexpr int PIN_OLED_DC    = 13;
+static constexpr int PIN_OLED_CS    = 10;
+static constexpr int PIN_OLED_RST   = 14;
 #else // BOARD_ESP32DEV — plain WROOM-32 (the bench board)
 static constexpr int PIN_FAN_MOSFET = 4;
 static constexpr int PIN_DS18B20    = 5;
-static constexpr int PIN_I2C_SDA    = 21;
+static constexpr int PIN_I2C_SDA    = 21; // ADS1115 (OLED is on SPI, see below)
 static constexpr int PIN_I2C_SCL    = 22;
+// SSD1306 OLED via 4-wire software SPI (module labeled D0/D1/RES/DC/CS).
+// Software (bit-banged) SPI on named pins: updates run at 1 Hz so speed is a
+// non-issue, and it avoids hardware-SPI's default SS pin (GPIO5) colliding with
+// the 1-Wire sensor. Wire: D0->CLK, D1->MOSI, RES->RST, DC->DC, CS->CS.
+static constexpr int PIN_OLED_CLK   = 18; // D0 (SCLK)
+static constexpr int PIN_OLED_MOSI  = 23; // D1 (MOSI)
+static constexpr int PIN_OLED_DC    = 17;
+static constexpr int PIN_OLED_CS    = 16;
+static constexpr int PIN_OLED_RST   = 25;
 #endif
 
 // ---------------------------------------------------------------------------
@@ -65,9 +80,8 @@ static constexpr float DS18B20_DISCONNECTED_C = -127.0f;
 static constexpr float DS18B20_POWERON_C      = 85.0f;
 
 // ---------------------------------------------------------------------------
-// I2C peripheral addresses
+// Display geometry (SSD1306 128x64, driven over SPI — no I2C address)
 // ---------------------------------------------------------------------------
-static constexpr uint8_t OLED_ADDR = 0x3C; // SSD1306 128x64
 static constexpr uint8_t OLED_W = 128, OLED_H = 64;
 
 // ---------------------------------------------------------------------------
