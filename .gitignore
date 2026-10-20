@@ -12,3 +12,6 @@ compile_commands.json
 .idea/
 *.swp
 .DS_Store
+
+# Local secrets (WOKWI_CLI_TOKEN)
+.env
