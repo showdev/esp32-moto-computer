@@ -1,0 +1,13 @@
+Id	Description	Qty	Unit	Designators
+1	Cable, Dupont jumper, 2 x 0.25 mm²	0.8	m	W_DIV, W_FAN, W_LED, W_PULLUP
+2	Cable, Dupont jumper, 3 x 0.25 mm²	0.2	m	W_DS18B20
+3	Cable, Dupont jumper, 4 x 0.25 mm²	0.2	m	W_ADS
+4	Cable, Dupont jumper, 7 x 0.25 mm²	0.2	m	W_OLED
+5	Connector, ADS1115 16-bit ADC module, I2C, battery voltage on A0, 5 pins	1		ADS1115
+6	Connector, Battery divider 6:1 (nominal), calibrate against a multimeter, 3 pins	1		DIVIDER
+7	Connector, Blue LED + 220 Ω, fan-commanded-ON indicator (parallel on GPIO4), 2 pins	1		LED_FAN
+8	Connector, DS18B20 waterproof probe, 1-Wire coolant sensor, 3 pins	1		DS18B20
+9	Connector, ESP32 DevKit (WROOM-32), header pins, 11 pins	1		ESP32
+10	Connector, LR7843 MOSFET module (isolated), low-side fan switch, active-HIGH assumed, 2 pins	1		MOSFET
+11	Connector, Resistor 4.7 kΩ, 1-Wire pull-up (required, GPIO5 is a strapping pin), 2 pins	1		PULLUP
+12	Connector, SSD1306 0.96" 128x64 SPI, software SPI, 7-pin module, 7 pins	1		OLED

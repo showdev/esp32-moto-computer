@@ -1,0 +1,108 @@
+# WireViz harness for the moto-control fan controller (plain ESP32 WROOM-32 bench board).
+# Render:  wireviz docs/wiring.yml   -> wiring.svg / wiring.png / wiring.bom.tsv
+# Source of truth for pins is include/config.h (BOARD_ESP32DEV section).
+
+metadata:
+  title: Moto-control — fan controller wiring
+  pn: iot/moto-control
+
+templates:
+  - &dupont
+    type: Dupont jumper
+    gauge: 0.25 mm2
+    length: 0.2
+
+connectors:
+  ESP32:
+    type: ESP32 DevKit (WROOM-32)
+    subtype: header pins
+    pinlabels: [3V3, GND, D4, D5, D21, D22, D18, D23, D17, D16, D25]
+    notes: Use a GND pin on either side; all are common.
+
+  DS18B20:
+    type: DS18B20 waterproof probe
+    subtype: 1-Wire coolant sensor
+    pinlabels: [VCC, DATA, GND]
+
+  PULLUP:
+    type: Resistor 4.7 kΩ
+    subtype: 1-Wire pull-up (required, GPIO5 is a strapping pin)
+    pinlabels: [3V3 side, DATA side]
+
+  ADS1115:
+    type: ADS1115 16-bit ADC module
+    subtype: I2C, battery voltage on A0
+    pinlabels: [VCC, GND, SDA, SCL, A0]
+
+  DIVIDER:
+    type: Battery divider 6:1 (nominal)
+    subtype: calibrate against a multimeter
+    pinlabels: [BATT+ 12 V, A0 tap, GND]
+
+  OLED:
+    type: SSD1306 0.96" 128x64 SPI
+    subtype: software SPI, 7-pin module
+    pinlabels: [VCC, GND, D0 (CLK), D1 (MOSI), RES, DC, CS]
+
+  MOSFET:
+    type: LR7843 MOSFET module (isolated)
+    subtype: low-side fan switch, active-HIGH assumed
+    pinlabels: [SIG, SIG-GND]
+
+  LED_FAN:
+    type: Blue LED + 220 Ω
+    subtype: fan-commanded-ON indicator (parallel on GPIO4)
+    pinlabels: [Anode, Cathode]
+
+cables:
+  W_DS18B20:
+    <<: *dupont
+    wirecount: 3
+    colors: [RD, YE, BK]
+  W_PULLUP:
+    <<: *dupont
+    wirecount: 2
+    colors: [RD, YE]
+  W_ADS:
+    <<: *dupont
+    wirecount: 4
+    colors: [RD, BK, YE, VT]
+  W_DIV:
+    <<: *dupont
+    wirecount: 2
+    colors: [YE, BK]
+  W_OLED:
+    <<: *dupont
+    wirecount: 7
+    colors: [RD, BK, YE, GN, BU, OG, WH]
+  W_FAN:
+    <<: *dupont
+    wirecount: 2
+    colors: [BU, BK]
+  W_LED:
+    <<: *dupont
+    wirecount: 2
+    colors: [BU, BK]
+
+connections:
+  - - DS18B20: [1, 2, 3]
+    - W_DS18B20: [1, 2, 3]
+    - ESP32: [1, 4, 2]
+  - - PULLUP: [1, 2]
+    - W_PULLUP: [1, 2]
+    - ESP32: [1, 4]
+  - - ADS1115: [1, 2, 3, 4]
+    - W_ADS: [1, 2, 3, 4]
+    - ESP32: [1, 2, 5, 6]
+  - - DIVIDER: [2, 3]
+    - W_DIV: [1, 2]
+    - ADS1115: [5, 2]
+  - - OLED: [1, 2, 3, 4, 5, 6, 7]
+    - W_OLED: [1, 2, 3, 4, 5, 6, 7]
+    - ESP32: [1, 2, 7, 8, 11, 9, 10]
+  - - MOSFET: [1, 2]
+    - W_FAN: [1, 2]
+    - ESP32: [3, 2]
+  - - LED_FAN: [1, 2]
+    - W_LED: [1, 2]
+    - ESP32: [3, 2]

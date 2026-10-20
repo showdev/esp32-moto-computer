@@ -1,0 +1,16 @@
+# Wokwi CLI scenario: heat the DS18B20 past the BENCH fan-on threshold (30 C)
+# and expect the fan output to switch on. Needs WOKWI_CLI_TOKEN.
+#
+#   pio run -e esp32dev_bench
+#   wokwi-cli --scenario test/fan.test.yaml --timeout 30000 .
+name: Fan turns on above bench threshold
+version: 1
+author: showdev
+
+steps:
+  - wait-serial: '[moto-control] boot'
+  - set-control:
+      part-id: temp1
+      control: temperature
+      value: 35
+  - wait-serial: 'fan=ON'
